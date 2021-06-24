@@ -15,7 +15,16 @@ import java.util.Comparator;
  *
  * @author Gaëtan HERFRAY
  */
-@Entity(tableName = "task_table")
+@Entity(tableName = "task_table",
+        foreignKeys = {
+                @ForeignKey(
+                        entity = Project.class,
+                        parentColumns = "p_projectId",
+                        childColumns = "projectId",
+                        onDelete = ForeignKey.CASCADE,
+                        onUpdate = ForeignKey.CASCADE
+                )
+        })
 public class Task {
 
 
@@ -26,12 +35,10 @@ public class Task {
     @ColumnInfo(name = "id")
     private long id;
 
-
-
     /**
      * The unique identifier of the project associated to the task
      */
-    @ColumnInfo(name = "projectId")
+    @ColumnInfo(name = "projectId", index = true)
     private long projectId;
 
     public long getProjectId() {
@@ -46,8 +53,6 @@ public class Task {
     @NonNull
     @ColumnInfo(name = "name")
     private String name;
-
-
 
     /**
      * The timestamp when the task has been created
@@ -99,11 +104,6 @@ public class Task {
         this.projectId = projectId;
     }
 
-    /**
-     * Returns the project associated to the task.
-     *
-     * @return the project associated to the task
-     */
     @Nullable
     public Project getProject() {
         return Project.getProjectById(projectId);

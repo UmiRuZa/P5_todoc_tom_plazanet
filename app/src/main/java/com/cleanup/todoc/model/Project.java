@@ -2,7 +2,6 @@ package com.cleanup.todoc.model;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
@@ -13,68 +12,43 @@ import android.support.annotation.Nullable;
  *
  * @author Gaëtan HERFRAY
  */
-@Entity(foreignKeys = {@ForeignKey(entity = Task.class,
-        parentColumns = "p_projectId",
-        childColumns = "projectId",
-        onDelete = ForeignKey.CASCADE)
-})
+@Entity(tableName = Project.TABLE_NAME)
 public class Project {
-    /**
-     * The unique identifier of the project
-     */
+
+    public static final Project[] DEFINED_PROJECTS = {
+            new Project(1L, "Projet Tartampion", 0xFFEADAD1),
+            new Project(2L, "Projet Lucidia", 0xFFB4CDBA),
+            new Project(3L, "Projet Circus", 0xFFA3CED2)
+    };
+
+    public static final String TABLE_NAME = "project";
+    public static final String ID_COLUMN_NAME = "p_projectId";
+    public static final String NAME_COLUMN_NAME = "name";
+    public static final String COLOR_COLUMN_NAME = "color";
+
     @PrimaryKey
-    @ColumnInfo(name = "p_projectId")
-    private final long projectId;
+    @ColumnInfo(name = ID_COLUMN_NAME)
+    private long projectId;
 
-    /**
-     * The name of the project
-     */
     @NonNull
-    private final String name;
+    @ColumnInfo(name = NAME_COLUMN_NAME)
+    private String name;
 
-    /**
-     * The hex (ARGB) code of the color associated to the project
-     */
     @ColorInt
-    private final int color;
+    @ColumnInfo(name = COLOR_COLUMN_NAME)
+    private int color;
 
-    /**
-     * Instantiates a new Project.
-     *
-     * @param projectId    the unique identifier of the project to set
-     * @param name  the name of the project to set
-     * @param color the hex (ARGB) code of the color associated to the project to set
-     */
     private Project(long projectId, @NonNull String name, @ColorInt int color) {
         this.projectId = projectId;
         this.name = name;
         this.color = color;
     }
 
-    /**
-     * Returns all the projects of the application.
-     *
-     * @return all the projects of the application
-     */
-    @NonNull
-    public static Project[] getAllProjects() {
-        return new Project[]{
-                new Project(1L, "Projet Tartampion", 0xFFEADAD1),
-                new Project(2L, "Projet Lucidia", 0xFFB4CDBA),
-                new Project(3L, "Projet Circus", 0xFFA3CED2),
-        };
-    }
+    public Project(){}
 
-    /**
-     * Returns the project with the given unique identifier, or null if no project with that
-     * identifier can be found.
-     *
-     * @param id the unique identifier of the project to return
-     * @return the project with the given unique identifier, or null if it has not been found
-     */
     @Nullable
     public static Project getProjectById(long id) {
-        for (Project project : getAllProjects()) {
+        for (Project project : DEFINED_PROJECTS) {
             if (project.projectId == id)
                 return project;
         }
@@ -86,7 +60,7 @@ public class Project {
      *
      * @return the unique identifier of the project
      */
-    public long getId() {
+    public long getProjectId() {
         return projectId;
     }
 
@@ -114,5 +88,17 @@ public class Project {
     @NonNull
     public String toString() {
         return getName();
+    }
+
+    public void setProjectId(long projectId) {
+        this.projectId = projectId;
+    }
+
+    public void setName(@NonNull String name) {
+        this.name = name;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }

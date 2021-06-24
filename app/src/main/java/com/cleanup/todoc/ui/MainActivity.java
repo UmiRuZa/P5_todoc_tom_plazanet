@@ -18,6 +18,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cleanup.todoc.R;
+import com.cleanup.todoc.database.ProjectDao;
+import com.cleanup.todoc.database.TaskDao;
 import com.cleanup.todoc.database.TaskDatabase;
 import com.cleanup.todoc.model.Project;
 import com.cleanup.todoc.model.Task;
@@ -34,10 +36,10 @@ import java.util.List;
  * @author Gaëtan HERFRAY
  */
 public class MainActivity extends AppCompatActivity implements TasksAdapter.DeleteTaskListener {
-    /**
-     * List of all projects available in the application
-     */
-    private final Project[] allProjects = Project.getAllProjects();
+
+    TaskDatabase db;
+    TaskDao taskDao;
+    ProjectDao projectDao;
 
     /**
      * List of all current tasks of the application
@@ -90,8 +92,6 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     @NonNull
     private TextView lblNoTasks;
 
-    TaskDatabase database;
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,9 +111,11 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
             }
         });
 
-        database = TaskDatabase.getInstance(this);
+        db = TaskDatabase.getInstance(this);
+        taskDao = db.taskDao();
+        projectDao = db.projectDao();
 
-        tasks = database.taskDao().getAll();
+        tasks = taskDao.getAll();
 
         updateTasks();
 
@@ -147,7 +149,8 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     @Override
     public void onDeleteTask(Task task) {
         tasks.remove(task);
-        database.taskDao().delete(task);
+        taskDao.delete(task);
+        taskDao.update(tasks);
         updateTasks();
     }
 
@@ -176,13 +179,13 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
             else if (taskProject != null) {
 
                 Task task = new Task(
-                        taskProject.getId(),
+                        taskProject.getProjectId(),
                         taskName,
                         new Date().getTime()
                 );
 
                 addTask(task);
-                database.taskDao().insert(task);
+                taskDao.insert(task);
 
                 dialogInterface.dismiss();
             }
@@ -297,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
      * Sets the data of the Spinner with projects to associate to a new task
      */
     private void populateDialogSpinner() {
+        List<Project> allProjects = projectDao.getAllProjects();
         final ArrayAdapter<Project> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, allProjects);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         if (dialogSpinner != null) {
